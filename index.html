@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeaksWeb</title>
+<style>
+  body, html {
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family: Arial;
+    background: url('https://i.postimg.cc/0jrPg5bv/images-(3).jpg') no-repeat center center fixed;
+    background-size: cover;
+    color:white;
+  }
+  .overlay {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.75);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:20px;
+  }
+  input { padding:10px; margin:5px; width:250px; }
+  button { padding:12px 25px; margin:10px; cursor:pointer; background:#f72585; border:none; color:white; font-size:16px; border-radius:5px; }
+  button:hover { background:#d81e6f; }
+  a { color:#f72585; text-decoration:none; }
+  h1 { margin-bottom:15px; }
+  p { margin-bottom:10px; }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="age-overlay">
+  <h1>Welcome to LeaksWeb</h1>
+  <p>Are you 18+?</p>
+  <button id="enter-btn">Yes, Enter</button>
+  <button id="exit-btn">Not Yet 18, Exit</button>
+</div>
+
+<div class="overlay" id="auth-overlay" style="display:none;">
+  <h1>Login or Sign Up</h1>
+
+  <!-- Login Form -->
+  <div id="login-form">
+    <input type="email" id="login-email" placeholder="Email"><br>
+    <input type="password" id="login-password" placeholder="Password"><br>
+    <button id="login-btn">Login</button><br>
+    <p>No account? <a href="#" id="show-register">Sign Up</a></p>
+  </div>
+
+  <!-- Register Form -->
+  <div id="register-form" style="display:none;">
+    <input type="email" id="register-email" placeholder="Email"><br>
+    <input type="password" id="register-password" placeholder="Password"><br>
+    <button id="register-btn">Sign Up</button><br>
+    <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDxu6s_8IwqgLum_a6stww_pMbox04ujy4",
+  authDomain: "leaksvideo1.firebaseapp.com",
+  projectId: "leaksvideo1",
+  storageBucket: "leaksvideo1.firebasestorage.app",
+  messagingSenderId: "318176005661",
+  appId: "1:318176005661:web:1426a10a6a0a92d7ff40f4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const ageOverlay = document.getElementById('age-overlay');
+const authOverlay = document.getElementById('auth-overlay');
+
+// Age verification
+document.getElementById('enter-btn').addEventListener('click', ()=>{
+  ageOverlay.style.display = 'none';
+  authOverlay.style.display = 'flex';
+});
+document.getElementById('exit-btn').addEventListener('click', ()=>{
+  alert("You are not old enough.");
+  window.location.href="https://www.google.com";
+});
+
+// Toggle login/register forms
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+
+document.getElementById('show-register').addEventListener('click', ()=>{
+  loginForm.style.display='none';
+  registerForm.style.display='block';
+});
+document.getElementById('show-login').addEventListener('click', ()=>{
+  registerForm.style.display='none';
+  loginForm.style.display='block';
+});
+
+// Firebase Login
+document.getElementById('login-btn').addEventListener('click', ()=>{
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  signInWithEmailAndPassword(auth,email,password)
+    .then(()=>{ alert("Logged in!"); })
+    .catch(err=>alert(err.message));
+});
+
+// Firebase Register
+document.getElementById('register-btn').addEventListener('click', ()=>{
+  const email = document.getElementById('register-email').value;
+  const password = document.getElementById('register-password').value;
+  createUserWithEmailAndPassword(auth,email,password)
+    .then(()=>{ alert("Account created!"); })
+    .catch(err=>alert(err.message));
+});
+
+// Keep user logged in
+onAuthStateChanged(auth, user => {
+  if(user){
+    alert("Already logged in!");
+    // Later you can redirect to dashboard here
+  }
+});
+</script>
+
+</body>
+</html>
