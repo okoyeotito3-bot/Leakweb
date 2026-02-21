@@ -34,10 +34,12 @@
   a { color:#f72585; text-decoration:none; }
   h1 { margin-bottom:15px; }
   p { margin-bottom:10px; }
+  label { display:block; margin-top:5px; font-size:14px; cursor:pointer; }
 </style>
 </head>
 <body>
 
+<!-- Age confirmation -->
 <div class="overlay" id="age-overlay">
   <h1>Welcome to LeaksWeb</h1>
   <p>Are you 18+?</p>
@@ -45,6 +47,7 @@
   <button id="exit-btn">Not Yet 18, Exit</button>
 </div>
 
+<!-- Login / Register -->
 <div class="overlay" id="auth-overlay" style="display:none;">
   <h1>Login or Sign Up</h1>
 
@@ -52,6 +55,7 @@
   <div id="login-form">
     <input type="email" id="login-email" placeholder="Email"><br>
     <input type="password" id="login-password" placeholder="Password"><br>
+    <label><input type="checkbox" id="login-show-password"> Show Password</label>
     <button id="login-btn">Login</button><br>
     <p>No account? <a href="#" id="show-register">Sign Up</a></p>
   </div>
@@ -60,9 +64,17 @@
   <div id="register-form" style="display:none;">
     <input type="email" id="register-email" placeholder="Email"><br>
     <input type="password" id="register-password" placeholder="Password"><br>
+    <label><input type="checkbox" id="register-show-password"> Show Password</label>
     <button id="register-btn">Sign Up</button><br>
     <p>Already have an account? <a href="#" id="show-login">Login</a></p>
   </div>
+</div>
+
+<!-- Dashboard -->
+<div class="overlay" id="dashboard-overlay" style="display:none;">
+  <h1>Welcome to your Dashboard!</h1>
+  <p>Here is where your videos and photos will appear later.</p>
+  <!-- Placeholder for future videos/photos -->
 </div>
 
 <script type="module">
@@ -83,6 +95,7 @@ const auth = getAuth(app);
 
 const ageOverlay = document.getElementById('age-overlay');
 const authOverlay = document.getElementById('auth-overlay');
+const dashboardOverlay = document.getElementById('dashboard-overlay');
 
 // Age verification
 document.getElementById('enter-btn').addEventListener('click', ()=>{
@@ -112,7 +125,10 @@ document.getElementById('login-btn').addEventListener('click', ()=>{
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   signInWithEmailAndPassword(auth,email,password)
-    .then(()=>{ alert("Logged in!"); })
+    .then(()=>{
+      authOverlay.style.display='none';
+      dashboardOverlay.style.display='flex';
+    })
     .catch(err=>alert(err.message));
 });
 
@@ -121,15 +137,28 @@ document.getElementById('register-btn').addEventListener('click', ()=>{
   const email = document.getElementById('register-email').value;
   const password = document.getElementById('register-password').value;
   createUserWithEmailAndPassword(auth,email,password)
-    .then(()=>{ alert("Account created!"); })
+    .then(()=>{
+      authOverlay.style.display='none';
+      dashboardOverlay.style.display='flex';
+    })
     .catch(err=>alert(err.message));
 });
+
+// Show/Hide password toggle
+const loginPassword = document.getElementById('login-password');
+const loginShow = document.getElementById('login-show-password');
+loginShow.addEventListener('change', ()=>{ loginPassword.type = loginShow.checked ? 'text' : 'password'; });
+
+const registerPassword = document.getElementById('register-password');
+const registerShow = document.getElementById('register-show-password');
+registerShow.addEventListener('change', ()=>{ registerPassword.type = registerShow.checked ? 'text' : 'password'; });
 
 // Keep user logged in
 onAuthStateChanged(auth, user => {
   if(user){
-    alert("Already logged in!");
-    // Later you can redirect to dashboard here
+    ageOverlay.style.display='none';
+    authOverlay.style.display='none';
+    dashboardOverlay.style.display='flex';
   }
 });
 </script>
