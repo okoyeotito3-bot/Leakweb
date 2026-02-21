@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LeaksWeb</title>
+<title>LeaksWeb Dashboard</title>
 <style>
   body, html {
     margin:0;
@@ -27,6 +27,7 @@
     align-items:center;
     text-align:center;
     padding:20px;
+    overflow-y:auto;
   }
   input { padding:10px; margin:5px; width:250px; }
   button { padding:12px 25px; margin:10px; cursor:pointer; background:#f72585; border:none; color:white; font-size:16px; border-radius:5px; }
@@ -35,6 +36,10 @@
   h1 { margin-bottom:15px; }
   p { margin-bottom:10px; }
   label { display:block; margin-top:5px; font-size:14px; cursor:pointer; }
+  #photo-gallery { display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-top:20px; }
+  .photo-card { display:flex; flex-direction:column; align-items:center; }
+  .photo-card img { width:180px; border-radius:8px; }
+  .photo-title, .photo-date { font-size:14px; margin-top:3px; color:#ddd; }
 </style>
 </head>
 <body>
@@ -71,16 +76,29 @@
 </div>
 
 <!-- Dashboard -->
-<div class="overlay" id="dashboard-overlay" style="display:none;">
-  <h1>Welcome to your Dashboard!</h1>
-  <p>Here is where your videos and photos will appear later.</p>
-  <!-- Placeholder for future videos/photos -->
+<div class="overlay" id="dashboard-overlay" style="display:none; background:#111;">
+  <h1>Dashboard</h1>
+
+  <!-- Search bar -->
+  <input type="text" id="photo-search" placeholder="Search photos...">
+  <p id="search-message"></p>
+
+  <!-- Photo gallery -->
+  <div id="photo-gallery">
+    <!-- Uploaded Photo -->
+    <div class="photo-card" data-name="ebony state girl feeling her body">
+      <img src="https://i.postimg.cc/rwp4sx3W/images-(4).jpg">
+      <span class="photo-title">Ebony State girl feeling her body</span>
+      <span class="photo-date" id="photo-date-1"></span>
+    </div>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDxu6s_8IwqgLum_a6stww_pMbox04ujy4",
   authDomain: "leaksvideo1.firebaseapp.com",
@@ -93,6 +111,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// DOM Elements
 const ageOverlay = document.getElementById('age-overlay');
 const authOverlay = document.getElementById('auth-overlay');
 const dashboardOverlay = document.getElementById('dashboard-overlay');
@@ -107,10 +126,9 @@ document.getElementById('exit-btn').addEventListener('click', ()=>{
   window.location.href="https://www.google.com";
 });
 
-// Toggle login/register forms
+// Toggle login/register
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
-
 document.getElementById('show-register').addEventListener('click', ()=>{
   loginForm.style.display='none';
   registerForm.style.display='block';
@@ -120,46 +138,71 @@ document.getElementById('show-login').addEventListener('click', ()=>{
   loginForm.style.display='block';
 });
 
-// Firebase Login
+// Login
 document.getElementById('login-btn').addEventListener('click', ()=>{
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   signInWithEmailAndPassword(auth,email,password)
     .then(()=>{
-      authOverlay.style.display='none';
-      dashboardOverlay.style.display='flex';
+      showDashboard();
     })
     .catch(err=>alert(err.message));
 });
 
-// Firebase Register
+// Register
 document.getElementById('register-btn').addEventListener('click', ()=>{
   const email = document.getElementById('register-email').value;
   const password = document.getElementById('register-password').value;
   createUserWithEmailAndPassword(auth,email,password)
     .then(()=>{
-      authOverlay.style.display='none';
-      dashboardOverlay.style.display='flex';
+      showDashboard();
     })
     .catch(err=>alert(err.message));
 });
 
-// Show/Hide password toggle
-const loginPassword = document.getElementById('login-password');
-const loginShow = document.getElementById('login-show-password');
-loginShow.addEventListener('change', ()=>{ loginPassword.type = loginShow.checked ? 'text' : 'password'; });
-
-const registerPassword = document.getElementById('register-password');
-const registerShow = document.getElementById('register-show-password');
-registerShow.addEventListener('change', ()=>{ registerPassword.type = registerShow.checked ? 'text' : 'password'; });
+// Show/hide password
+document.getElementById('login-show-password').addEventListener('change', ()=>{
+  const lp = document.getElementById('login-password');
+  lp.type = lp.type==='password' ? 'text':'password';
+});
+document.getElementById('register-show-password').addEventListener('change', ()=>{
+  const rp = document.getElementById('register-password');
+  rp.type = rp.type==='password' ? 'text':'password';
+});
 
 // Keep user logged in
 onAuthStateChanged(auth, user => {
-  if(user){
-    ageOverlay.style.display='none';
-    authOverlay.style.display='none';
-    dashboardOverlay.style.display='flex';
-  }
+  if(user) showDashboard();
+});
+
+// Show dashboard
+function showDashboard(){
+  authOverlay.style.display='none';
+  dashboardOverlay.style.display='block';
+  document.body.style.background = "#111"; // remove old background
+  // Set upload date/time Nigeria
+  const nigeriaTime = new Date().toLocaleString("en-US", {timeZone: "Africa/Lagos"});
+  document.getElementById('photo-date-1').textContent = "Uploaded: "+nigeriaTime;
+}
+
+// Photo search
+const searchInput = document.getElementById('photo-search');
+const gallery = document.getElementById('photo-gallery');
+const message = document.getElementById('search-message');
+
+searchInput.addEventListener('input', ()=>{
+  const query = searchInput.value.toLowerCase();
+  let found = false;
+  Array.from(gallery.children).forEach(card=>{
+    const name = card.dataset.name.toLowerCase();
+    if(name.includes(query)){
+      card.style.display='flex';
+      found = true;
+    } else {
+      card.style.display='none';
+    }
+  });
+  message.textContent = query && !found ? "Search results is empty" : "";
 });
 </script>
 
